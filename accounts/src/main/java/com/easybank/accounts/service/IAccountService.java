@@ -5,4 +5,6 @@ import com.easybank.accounts.dto.CustomerDto;
 public interface IAccountService {
 
     void createAccount(CustomerDto customerDto);
+
+    CustomerDto fetchAcount(String mobileNumber);
 }

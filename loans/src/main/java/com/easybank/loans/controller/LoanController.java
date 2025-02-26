@@ -1,12 +1,16 @@
 package com.easybank.loans.controller;
 
 import com.easybank.loans.constants.LoansConstants;
+import com.easybank.loans.dto.LoansContactInfoDto;
 import com.easybank.loans.dto.LoansDto;
 import com.easybank.loans.dto.ResponseDto;
 import com.easybank.loans.service.ILoanService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,14 +20,19 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping(value = "/api",produces = {MediaType.APPLICATION_JSON_VALUE})
 @EnableJpaAuditing(auditorAwareRef = "auditAwareImpl")
 public class LoanController {
 
-    private ILoanService iLoanService;
+    private final ILoanService iLoanService;
 
+    @Value("${build.version}")
+    private String buildVersion;
 
+    private final Environment environment;
+
+    private final LoansContactInfoDto loansContactInfoDto;
     @PostMapping("/create")
     public ResponseEntity<ResponseDto> createLoan(@RequestParam
                                                   @Pattern(regexp = "(^$|[0-9]{10})",message = "Mobile number should be of 10 digits")
@@ -70,5 +79,20 @@ public class LoanController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
                     .body(new ResponseDto(LoansConstants.STATUS_417,LoansConstants.MESSAGE_417_DELETE));
         }
+    }
+
+    @GetMapping("build-info")
+    public ResponseEntity<String> getBuildInfo(){
+        return ResponseEntity.ok(buildVersion);
+    }
+
+    @GetMapping("java-version")
+    public ResponseEntity<String> getJavaVersion(){
+        return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
+    }
+
+    @GetMapping("contact-info")
+    public ResponseEntity<LoansContactInfoDto> getContactInfo(){
+        return ResponseEntity.ok(loansContactInfoDto);
     }
 }

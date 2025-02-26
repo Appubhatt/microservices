@@ -1,6 +1,7 @@
 package com.easybank.card.controller;
 
 import com.easybank.card.constants.CardConstants;
+import com.easybank.card.dto.CardContactInfoDto;
 import com.easybank.card.dto.CardsDto;
 import com.easybank.card.dto.ErrorResponseDto;
 import com.easybank.card.dto.ResponseDto;
@@ -14,6 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path = "/api",produces = {MediaType.APPLICATION_JSON_VALUE})
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Tag(
         name = "CRUD REST APIs for Cards in EasyBank",
         description = "CRUD REST APIs in EazyBank to CREATE, UPDATE, FETCH AND DELETE card details"
@@ -31,8 +35,14 @@ import org.springframework.web.bind.annotation.*;
 public class CardController {
 
 
-    private ICardService iCardService;
+    private final ICardService iCardService;
 
+    @Value("${build.version}")
+    private String buildVersion;
+
+    private final Environment environment;
+
+    private final CardContactInfoDto cardContactInfoDto;
     @Operation(
             description = "API for saving the card information in system."
     )
@@ -159,4 +169,76 @@ public class CardController {
         }
     }
 
+    @Operation(
+            summary = "Get Build information",
+            description = "Get Build information that is deployed into cards microservice"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "HTTP Status OK"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "HTTP Status Internal Server Error",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    }
+    )
+    @GetMapping("build-info")
+    public ResponseEntity<String> getBuildInfo(){
+
+        return ResponseEntity.ok(buildVersion);
+    }
+
+    @Operation(
+            summary = "Get Java version",
+            description = "Get Java versions details that is installed into cards microservice"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "HTTP Status OK"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "HTTP Status Internal Server Error",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    }
+    )
+    @GetMapping("java-version")
+    public ResponseEntity<String> getJavaVersion(){
+
+        return ResponseEntity.ok(environment.getProperty("JAVA_HOME"));
+
+    }
+
+    @Operation(
+            summary = "Get Contact Info",
+            description = "Contact Info details that can be reached out in case of any issues"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "HTTP Status OK"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "HTTP Status Internal Server Error",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    }
+    )
+    @GetMapping("contact-info")
+    public ResponseEntity<CardContactInfoDto> getContactInfo(){
+
+        return ResponseEntity.ok(cardContactInfoDto);
+    }
 }
